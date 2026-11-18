@@ -182,7 +182,7 @@ tabindex="-1"
 aria-label="Ошибки при заполнении формы"> <ul
 role="list"
 class="t-form__errorbox-text t-text t-text_md"> <li class="t-form__errorbox-item js-rule-error js-rule-error-all"></li> <li class="t-form__errorbox-item js-rule-error js-rule-error-req"></li> <li class="t-form__errorbox-item js-rule-error js-rule-error-email"></li> <li class="t-form__errorbox-item js-rule-error js-rule-error-name"></li> <li class="t-form__errorbox-item js-rule-error js-rule-error-phone"></li> <li class="t-form__errorbox-item js-rule-error js-rule-error-minlength"></li> <li class="t-form__errorbox-item js-rule-error js-rule-error-string"></li> </ul> </div> <!--/noindex--> </div> <div class="t-form__submit"> <button
-class="t-submit t-btnflex t-btnflex_type_submit t-btnflex_md" onclick="trackMetaLead()"
+class="t-submit t-btnflex t-btnflex_type_submit t-btnflex_md"
 type="submit"><span class="t-btnflex__text">Малакали мутахассисдан маслаҳат олиш
 </span> <style>#rec4303639003 .t-btnflex.t-btnflex_type_submit{color:#ffffff;background-color:#ff7300;--border-width:0px;border-style:none !important;border-radius:7px;box-shadow:none !important;transition-duration:0.2s;transition-property:background-color,color,border-color,box-shadow,opacity,transform,gap;transition-timing-function:ease-in-out;}</style></button> </div> </div> <div class="t-form__errorbox-bottom"> <!--noindex--> <div
 class="js-errorbox-all t-form__errorbox-wrapper"
@@ -257,6 +257,39 @@ window.tildastatcookie='no';setTimeout(function(){(function(d,w,k,o,g) {var n=d.
     var form = document.getElementById('form4303639003');
     if (form) {
       var submitted = false;
+      var REQ_MSG = 'Илтимос, бу майдонни тўлдиринг';
+
+      function errBoxOf(el) {
+        if (!el) return null;
+        var id = el.getAttribute('aria-describedby');
+        return id ? document.getElementById(id) : null;
+      }
+      function showFieldError(el, msg) {
+        if (!el) return;
+        el.style.border = '2px solid #ff4d4d';
+        var box = errBoxOf(el);
+        if (box) {
+          box.textContent = msg;
+          box.style.cssText = 'display:block;color:#ff6b6b;font-size:14px;font-weight:600;margin-top:6px;';
+        }
+      }
+      function clearFieldError(el) {
+        if (!el) return;
+        el.style.border = '';
+        var box = errBoxOf(el);
+        if (box) {
+          box.textContent = '';
+          box.style.display = 'none';
+        }
+      }
+      ['Name', 'Phone', 'Input'].forEach(function(n) {
+        var el = form.querySelector('[name="' + n + '"]');
+        if (el) {
+          el.addEventListener('input', function() {
+            if (el.value.trim()) clearFieldError(el);
+          });
+        }
+      });
 
       function handleLead(e) {
         if (e) {
@@ -273,12 +306,14 @@ window.tildastatcookie='no';setTimeout(function(){(function(d,w,k,o,g) {var n=d.
         var phoneVal = phoneEl ? phoneEl.value.trim() : '';
         var detailVal = inputEl ? inputEl.value.trim() : '';
 
-        if (!nameVal) {
-          if (nameEl) nameEl.focus();
-          return;
-        }
-        if (!phoneVal) {
-          if (phoneEl) phoneEl.focus();
+        [nameEl, phoneEl, inputEl].forEach(clearFieldError);
+        var missing = [];
+        if (!nameVal) missing.push(nameEl);
+        if (!phoneVal) missing.push(phoneEl);
+        if (!detailVal) missing.push(inputEl);
+        if (missing.length) {
+          missing.forEach(function(el) { showFieldError(el, REQ_MSG); });
+          if (missing[0]) missing[0].focus();
           return;
         }
 
@@ -311,11 +346,7 @@ window.tildastatcookie='no';setTimeout(function(){(function(d,w,k,o,g) {var n=d.
       var submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) {
         submitBtn.addEventListener('click', function(e) {
-          var nameEl = form.querySelector('[name="Name"]');
-          var phoneEl = form.querySelector('[name="Phone"]');
-          if (nameEl && nameEl.value.trim() && phoneEl && phoneEl.value.trim()) {
-            handleLead(e);
-          }
+          handleLead(e);
         });
       }
     }
